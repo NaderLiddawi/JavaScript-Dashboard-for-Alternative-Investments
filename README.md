@@ -157,8 +157,18 @@ Lists required Python libraries:
 ________________________________________________________________________
 
 
+## HOW TO RUN THE DASHBOARD (Windows)
 
-## HOW TO RUN ON TERMINAL (Windows)
+There are two ways to run this project:
+
+1. Using the Python script (recommended for developers)
+2. Using the standalone Windows EXE (recommended for end users)
+
+Both methods produce the exact same dashboard output.
+
+---
+
+# OPTION A – Run Using Python (Terminal Method)
 
 ### 1. Open a Terminal
 Press **Start → type `cmd` or `PowerShell` → press Enter.**
@@ -228,7 +238,54 @@ python run_dashboard.py
 
 ---
 
-### 7. Choose Your Excel File
+# OPTION B – Run Using the Windows EXE (No Python Needed)
+
+For non-technical users, the application is also provided as a standalone Windows executable:
+
+```
+AlternativesDashboard.exe
+```
+
+### How to Use the EXE
+
+Simply double-click:
+
+```
+AlternativesDashboard.exe
+```
+
+No Python installation, virtual environment, or terminal is required.
+
+The EXE performs the exact same steps as the Python script, but in a fully self-contained format that works on any Windows machine.
+
+---
+
+# HOW THE EXE WAS CREATED
+
+The file **AlternativesDashboard.exe** was packaged from the Python code using PyInstaller.
+
+Packaging was done with a command similar to:
+
+```
+pyinstaller --onefile --noconsole run_dashboard.py
+```
+
+This process bundles:
+
+- Python interpreter  
+- All required libraries  
+- Project scripts  
+- Dashboard generation logic  
+
+into a single Windows executable that runs without needing Python installed.
+
+---
+
+# SELECTING DATA (Same for Both Methods)
+
+### Choose Your Excel File
+
+After running either the Python script or the EXE:
 
 A Windows file picker will automatically appear.
 
@@ -243,9 +300,9 @@ FRL_Portfolio
 
 ---
 
-### 8. Dashboard Output
+# DASHBOARD OUTPUT
 
-After selecting the file, the script will generate:
+After selecting the Excel file, the system will generate:
 
 ```
 alternatives_dashboard.html
@@ -253,17 +310,28 @@ alternatives_dashboard.html
 
 The dashboard will then **automatically open in your default web browser.**
 
+This HTML file is completely self-contained and can be shared or opened without any additional software.
+
 ---
 
-## Re-running the Dashboard
+# Re-running the Dashboard
 
-Whenever you want to update results:
+Whenever you want to update results with new data:
 
-Activate the environment and run again:
+### If using Python:
 
 ```
 .venv\Scripts\activate
 python run_dashboard.py
 ```
 
+### If using the EXE:
+
+Just double-click again:
+
+```
+AlternativesDashboard.exe
+```
+
 Pick a new Excel file → a new HTML dashboard will be generated instantly.
+
