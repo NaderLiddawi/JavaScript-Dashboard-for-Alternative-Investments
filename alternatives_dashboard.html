@@ -1,0 +1,1042 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fortitude Re - Alternatives Portfolio Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            padding: 0 40px;
+        }
+        
+        .nav-tab {
+            padding: 20px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab:hover {
+            color: #495057;
+            background: #e9ecef;
+        }
+        
+        .nav-tab.active {
+            color: #2a5298;
+            border-bottom-color: #2a5298;
+            background: white;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        .metric-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .metric-card .value {
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .metric-card .subtext {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .chart-container h2 {
+            color: #2a5298;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .data-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .data-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.5px;
+        }
+        
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+        
+        .negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            text-align: center;
+            color: #6c757d;
+            border-top: 1px solid #dee2e6;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 30px;
+        }
+        
+        
+        .info-box {
+            background: #e7f3ff;
+            border-left: 4px solid #2a5298;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        
+        .info-box h3 {
+            color: #2a5298;
+            margin-bottom: 10px;
+        }
+        
+        .info-box ul {
+            margin-left: 20px;
+            color: #495057;
+        }
+        
+        .info-box li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Fortitude Re - Alternatives Portfolio Dashboard</h1>
+            <p>Comprehensive Analysis & Performance Tracking</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">
+                Data Period: 2019-03-31 to 2025-09-30 | 
+                Generated: 2025-12-10 15:15:53
+            </p>
+        </div>
+        
+        <!-- Navigation Tabs -->
+        <div class="nav-tabs">
+            <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
+            <div class="nav-tab" onclick="showTab('composition')">Composition</div>
+            <div class="nav-tab" onclick="showTab('performance')">Performance</div>
+            <div class="nav-tab" onclick="showTab('trends')">Trends</div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Overview Tab -->
+            <div id="overview" class="tab-content active">
+                <div class="info-box">
+                    <h3>📊 Dashboard Overview</h3>
+                    <ul>
+                        <li><strong>Purpose:</strong> Track and analyze Fortitude Re's Alternatives quarterly portfolio performance and composition</li>
+                        <li><strong>Alternatives Defined:</strong> Private Equity, Real Assets, Hedge Funds, Credit Funds, and Real Estate</li>
+                        <li><strong>Coverage:</strong> 21,538 investment records</li>
+                        <li><strong>Update Frequency:</strong> Quarterly (easily refreshable with new quarterly data)</li>
+                    </ul>
+                </div>
+                
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Quarterly Metrics Summary</h2>
+                <div class="metrics-grid">
+                    
+        <div class="metric-card">
+            <h3>Total End NAV</h3>
+            <div class="value">$3.37B</div>
+            <div class="subtext">Quarter Ended: 2025-09-30</div>
+        </div>
+        
+        <div class="metric-card">
+            <h3>Weighted Return</h3>
+            <div class="value">1.38%</div>
+            <div class="subtext">Most Recent Quarter</div>
+        </div>
+        
+        <div class="metric-card">
+            <h3>Total Securities</h3>
+            <div class="value">907</div>
+            <div class="subtext">Across 5 Asset Classes</div>
+        </div>
+        
+        <div class="metric-card">
+            <h3>Net Investment Income</h3>
+            <div class="value">$44.1M</div>
+            <div class="subtext">Most Recent Quarter</div>
+        </div>
+        
+                </div>
+                
+                <div class="grid-2">
+                    <div class="chart-container">
+                        <h2>Total End NAV Trend: Alts vs Non-Alts</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="navComparisonChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h2>Quarterly Return Performance</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="quarterlyReturnChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Composition Tab -->
+            <div id="composition" class="tab-content">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Portfolio Composition Analysis</h2>
+                
+                <div class="grid-2">
+                    <div class="chart-container">
+                        <h2>Alternatives by Asset Class (Current)</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="compositionPieChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h2>Asset Class Distribution (NAV)</h2>
+                        <div class="chart-wrapper">
+                            <canvas id="compositionBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>Detailed Composition Breakdown</h2>
+                    
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Asset Class</th>
+                    <th>Total NAV</th>
+                    <th>% of Portfolio</th>
+                    <th>Number of Securities</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><strong>Private Equity</strong></td>
+                <td>$0.744B</td>
+                <td>22.1%</td>
+                <td>199</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Real Assets</strong></td>
+                <td>$0.710B</td>
+                <td>21.1%</td>
+                <td>196</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Hedge Funds</strong></td>
+                <td>$0.692B</td>
+                <td>20.6%</td>
+                <td>182</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Credit Funds</strong></td>
+                <td>$0.614B</td>
+                <td>18.2%</td>
+                <td>166</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Real Estate</strong></td>
+                <td>$0.606B</td>
+                <td>18.0%</td>
+                <td>164</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+                </div>
+            </div>
+            
+            <!-- Performance Tab -->
+            <div id="performance" class="tab-content">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Performance Analysis</h2>
+                
+                <div class="chart-container">
+                    <h2>Returns by Asset Class (Most Recent Quarter)</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="performanceChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>Quarterly Performance Metrics</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="incomeYieldChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>Performance Details by Asset Class</h2>
+                    
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Asset Class</th>
+                    <th>Ending NAV</th>
+                    <th>Return %</th>
+                    <th>Investment Income</th>
+                    <th>Contributions</th>
+                    <th>Distributions</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+            <tr>
+                <td><strong>Private Equity</strong></td>
+                <td>$0.744B</td>
+                <td class="positive">1.54%</td>
+                <td>$10.47M</td>
+                <td>$19.74M</td>
+                <td>$15.67M</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Hedge Funds</strong></td>
+                <td>$0.692B</td>
+                <td class="positive">1.41%</td>
+                <td>$9.32M</td>
+                <td>$19.62M</td>
+                <td>$15.56M</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Credit Funds</strong></td>
+                <td>$0.614B</td>
+                <td class="positive">1.37%</td>
+                <td>$7.77M</td>
+                <td>$15.39M</td>
+                <td>$14.62M</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Real Estate</strong></td>
+                <td>$0.606B</td>
+                <td class="positive">1.31%</td>
+                <td>$7.79M</td>
+                <td>$17.28M</td>
+                <td>$13.76M</td>
+            </tr>
+            
+            <tr>
+                <td><strong>Real Assets</strong></td>
+                <td>$0.710B</td>
+                <td class="positive">1.25%</td>
+                <td>$8.73M</td>
+                <td>$20.96M</td>
+                <td>$16.55M</td>
+            </tr>
+            
+            </tbody>
+        </table>
+        
+                </div>
+            </div>
+            
+            <!-- Trends Tab -->
+            <div id="trends" class="tab-content">
+                <h2 style="color: #2a5298; margin-bottom: 20px;">Historical Trends</h2>
+                
+                <div class="chart-container">
+                    <h2>NAV Growth by Asset Class Over Time</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="trendsLineChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>Cash Flow Analysis: Contributions vs Distributions</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="cashFlowChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <h2>Investment Income Trends</h2>
+                    <div class="chart-wrapper">
+                        <canvas id="incomeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p><strong>Fortitude Re - Alternatives Portfolio Dashboard</strong></p>
+            <p>Data sourced from FRL_Portfolio dataset.</p>
+            <p>To update with new quarterly data, run: python run_dashboard.py</p>
+        </div>
+    </div>
+
+    <script>
+        // Embedded data
+        const dashboardData = {"metadata": {"generated_date": "2025-12-10 15:15:53", "data_period": "2019-03-31 to 2025-09-30", "total_records": 26512, "alternatives_records": 21538}, "key_metrics": {"total_nav": 3365431608.125284, "total_income": 44078614.83767415, "total_contributions": 92982611.83126816, "total_distributions": 76161798.93568194, "weighted_return_pct": 1.3791964390663503, "num_securities": 907, "num_asset_classes": 5, "as_of_date": "2025-09-30"}, "composition": [{"Asset_Class": "Private Equity", "Total_NAV": 743785677.1627964, "Num_Securities": 199, "Percentage": 22.100751516300242}, {"Asset_Class": "Real Assets", "Total_NAV": 709762226.6641409, "Num_Securities": 196, "Percentage": 21.08978310391262}, {"Asset_Class": "Hedge Funds", "Total_NAV": 692348473.8348976, "Num_Securities": 182, "Percentage": 20.57235310214997}, {"Asset_Class": "Credit Funds", "Total_NAV": 613894090.6787977, "Num_Securities": 166, "Percentage": 18.24116969712446}, {"Asset_Class": "Real Estate", "Total_NAV": 605641139.7846515, "Num_Securities": 164, "Percentage": 17.995942580512704}], "alternatives_timeseries": [{"Date": "2019-03-31", "End_NAV": 223248049.06962356, "Net_Investment_Income": 2641020.6065870672, "Contributions": 11052075.397299694, "Distributions": 8169295.367496134, "Category": "Alternatives"}, {"Date": "2019-06-30", "End_NAV": 493945944.82916003, "Net_Investment_Income": 5430963.797846383, "Contributions": 48430332.61053134, "Distributions": 17703373.76259865, "Category": "Alternatives"}, {"Date": "2019-09-30", "End_NAV": 766103554.9968011, "Net_Investment_Income": 9441146.619407212, "Contributions": 36434209.12049591, "Distributions": 26983306.598711833, "Category": "Alternatives"}, {"Date": "2019-12-31", "End_NAV": 1010198968.7447474, "Net_Investment_Income": 12483162.537365165, "Contributions": 49814525.07542617, "Distributions": 35833531.99963932, "Category": "Alternatives"}, {"Date": "2020-03-31", "End_NAV": 1328793794.4709823, "Net_Investment_Income": 16082672.321950024, "Contributions": 95136459.25070132, "Distributions": 47466137.325220205, "Category": "Alternatives"}, {"Date": "2020-06-30", "End_NAV": 1692138284.7573867, "Net_Investment_Income": 19338672.780923072, "Contributions": 163355033.2021632, "Distributions": 55880643.60968705, "Category": "Alternatives"}, {"Date": "2020-09-30", "End_NAV": 1964866090.3799431, "Net_Investment_Income": 25212262.404111642, "Contributions": 118381580.89252941, "Distributions": 62756580.37207028, "Category": "Alternatives"}, {"Date": "2020-12-31", "End_NAV": 2242777934.505595, "Net_Investment_Income": 28709296.134466343, "Contributions": 93565041.59383844, "Distributions": 75634677.65679324, "Category": "Alternatives"}, {"Date": "2021-03-31", "End_NAV": 2291347626.19256, "Net_Investment_Income": 29672247.29646776, "Contributions": 94000661.11238642, "Distributions": 75060377.90808785, "Category": "Alternatives"}, {"Date": "2021-06-30", "End_NAV": 2340648728.216201, "Net_Investment_Income": 30570210.483671155, "Contributions": 91138676.15368384, "Distributions": 72981280.51324265, "Category": "Alternatives"}, {"Date": "2021-09-30", "End_NAV": 2433612278.345625, "Net_Investment_Income": 30773992.204426296, "Contributions": 139384351.190884, "Distributions": 76673903.7932243, "Category": "Alternatives"}, {"Date": "2021-12-31", "End_NAV": 2480486275.636561, "Net_Investment_Income": 32294185.782664884, "Contributions": 90070360.63990307, "Distributions": 76169862.90778938, "Category": "Alternatives"}, {"Date": "2022-03-31", "End_NAV": 2533928665.6082883, "Net_Investment_Income": 32681715.77860648, "Contributions": 93649877.12185428, "Distributions": 72273747.87591195, "Category": "Alternatives"}, {"Date": "2022-06-30", "End_NAV": 2584447011.9272504, "Net_Investment_Income": 33802132.338740356, "Contributions": 90615823.9665096, "Distributions": 73267159.02945197, "Category": "Alternatives"}, {"Date": "2022-09-30", "End_NAV": 2637513677.3017664, "Net_Investment_Income": 33683236.431468695, "Contributions": 94403425.77331996, "Distributions": 75632303.31215158, "Category": "Alternatives"}, {"Date": "2022-12-31", "End_NAV": 2690203911.012927, "Net_Investment_Income": 35595401.04916438, "Contributions": 89448905.28854801, "Distributions": 72641983.37646972, "Category": "Alternatives"}, {"Date": "2023-03-31", "End_NAV": 2736959218.3884363, "Net_Investment_Income": 35602417.987329684, "Contributions": 90878361.42991215, "Distributions": 77858006.99277708, "Category": "Alternatives"}, {"Date": "2023-06-30", "End_NAV": 2789033501.1327734, "Net_Investment_Income": 36542569.056148656, "Contributions": 91105581.72242294, "Distributions": 76328576.54284653, "Category": "Alternatives"}, {"Date": "2023-09-30", "End_NAV": 2842404573.3526797, "Net_Investment_Income": 37107803.736861534, "Contributions": 91896303.74293582, "Distributions": 76269303.07230613, "Category": "Alternatives"}, {"Date": "2023-12-31", "End_NAV": 2948391655.4362416, "Net_Investment_Income": 37064333.91920536, "Contributions": 149744796.6372461, "Distributions": 78503753.96967736, "Category": "Alternatives"}, {"Date": "2024-03-31", "End_NAV": 3007373092.0158763, "Net_Investment_Income": 39704619.28353132, "Contributions": 92395728.92433098, "Distributions": 74210046.44244726, "Category": "Alternatives"}, {"Date": "2024-06-30", "End_NAV": 3063925937.4659157, "Net_Investment_Income": 40198898.48208705, "Contributions": 94477560.69358799, "Distributions": 77653677.7032163, "Category": "Alternatives"}, {"Date": "2024-09-30", "End_NAV": 3122844979.3718987, "Net_Investment_Income": 41837615.67458687, "Contributions": 89122273.08461447, "Distributions": 73320133.3748985, "Category": "Alternatives"}, {"Date": "2024-12-31", "End_NAV": 3181951677.91982, "Net_Investment_Income": 42859328.453135185, "Contributions": 90667812.7607681, "Distributions": 74974146.21131599, "Category": "Alternatives"}, {"Date": "2025-03-31", "End_NAV": 3243372340.968465, "Net_Investment_Income": 42449507.95619224, "Contributions": 94717388.45044003, "Distributions": 75626116.26833351, "Category": "Alternatives"}, {"Date": "2025-06-30", "End_NAV": 3302960127.264306, "Net_Investment_Income": 44538386.66552932, "Contributions": 89987594.16408014, "Distributions": 74974866.27323665, "Category": "Alternatives"}, {"Date": "2025-09-30", "End_NAV": 3365431608.125284, "Net_Investment_Income": 44078614.83767415, "Contributions": 92982611.83126816, "Distributions": 76161798.93568194, "Category": "Alternatives"}], "non_alternatives_timeseries": [{"Date": "2019-03-31", "End_NAV": 132704570.42722133, "Net_Investment_Income": 0.0, "Contributions": 132543779.73171139, "Distributions": 0.0, "Category": "Non-Alternatives"}, {"Date": "2019-06-30", "End_NAV": 272845319.72730327, "Net_Investment_Income": 2179969.8129090597, "Contributions": 138835605.85175458, "Distributions": 1375772.0472123267, "Category": "Non-Alternatives"}, {"Date": "2019-09-30", "End_NAV": 376543974.96843714, "Net_Investment_Income": 4458339.225566077, "Contributions": 103546527.58981784, "Distributions": 1741732.3700725618, "Category": "Non-Alternatives"}, {"Date": "2019-12-31", "End_NAV": 446901975.06861717, "Net_Investment_Income": 5995727.119665509, "Contributions": 64625393.223497786, "Distributions": 2918040.8535770234, "Category": "Non-Alternatives"}, {"Date": "2020-03-31", "End_NAV": 640521378.276748, "Net_Investment_Income": 7474251.613042306, "Contributions": 190116302.26556697, "Distributions": 2878373.0696051787, "Category": "Non-Alternatives"}, {"Date": "2020-06-30", "End_NAV": 807023208.023489, "Net_Investment_Income": 10518786.538371889, "Contributions": 161040969.34670773, "Distributions": 3748376.5717805536, "Category": "Non-Alternatives"}, {"Date": "2020-09-30", "End_NAV": 1019191592.3226882, "Net_Investment_Income": 13778325.158666605, "Contributions": 208604153.77550665, "Distributions": 4795906.774537479, "Category": "Non-Alternatives"}, {"Date": "2020-12-31", "End_NAV": 1188599932.3706782, "Net_Investment_Income": 17713393.673889656, "Contributions": 155284105.97758093, "Distributions": 9262790.35574288, "Category": "Non-Alternatives"}, {"Date": "2021-03-31", "End_NAV": 1210977985.9257, "Net_Investment_Income": 20502364.524346635, "Contributions": 16797810.65757696, "Distributions": 13441299.585596902, "Category": "Non-Alternatives"}, {"Date": "2021-06-30", "End_NAV": 1232286183.6014013, "Net_Investment_Income": 20683070.720676854, "Contributions": 14410695.609190663, "Distributions": 15674033.697406134, "Category": "Non-Alternatives"}, {"Date": "2021-09-30", "End_NAV": 1263061954.9206805, "Net_Investment_Income": 20993547.71312017, "Contributions": 24797534.91181015, "Distributions": 16961873.640735876, "Category": "Non-Alternatives"}, {"Date": "2021-12-31", "End_NAV": 1273704077.0417635, "Net_Investment_Income": 21536602.484135285, "Contributions": 11402805.729060821, "Distributions": 18005027.27636449, "Category": "Non-Alternatives"}, {"Date": "2022-03-31", "End_NAV": 1329423450.2542188, "Net_Investment_Income": 21898755.84899942, "Contributions": 50583484.46767695, "Distributions": 20597654.748825025, "Category": "Non-Alternatives"}, {"Date": "2022-06-30", "End_NAV": 1337485368.716178, "Net_Investment_Income": 22807361.96151211, "Contributions": 11271617.075427508, "Distributions": 22863163.29262961, "Category": "Non-Alternatives"}, {"Date": "2022-09-30", "End_NAV": 1355227381.1740124, "Net_Investment_Income": 23196595.463418476, "Contributions": 14401347.121104853, "Distributions": 24753054.094509993, "Category": "Non-Alternatives"}, {"Date": "2022-12-31", "End_NAV": 1378344583.9713361, "Net_Investment_Income": 22927268.676526003, "Contributions": 28234443.38496497, "Distributions": 26536376.2270204, "Category": "Non-Alternatives"}, {"Date": "2023-03-31", "End_NAV": 1421541636.3355, "Net_Investment_Income": 23881145.910453755, "Contributions": 47320670.61123507, "Distributions": 28163936.045569923, "Category": "Non-Alternatives"}, {"Date": "2023-06-30", "End_NAV": 1449769101.180404, "Net_Investment_Income": 23595940.33735121, "Contributions": 32776410.26948995, "Distributions": 27721977.274819277, "Category": "Non-Alternatives"}, {"Date": "2023-09-30", "End_NAV": 1490171021.906564, "Net_Investment_Income": 24408944.011511665, "Contributions": 50160804.41626122, "Distributions": 30387739.192967556, "Category": "Non-Alternatives"}, {"Date": "2023-12-31", "End_NAV": 1497764286.724828, "Net_Investment_Income": 25770585.859727863, "Contributions": 10284041.89360299, "Distributions": 30074676.88653115, "Category": "Non-Alternatives"}, {"Date": "2024-03-31", "End_NAV": 1501894520.2565982, "Net_Investment_Income": 25668528.906214815, "Contributions": 10447975.293414682, "Distributions": 32540056.630371507, "Category": "Non-Alternatives"}, {"Date": "2024-06-30", "End_NAV": 1528537358.1128933, "Net_Investment_Income": 25557569.995059356, "Contributions": 34287315.370022744, "Distributions": 34347162.241175175, "Category": "Non-Alternatives"}, {"Date": "2024-09-30", "End_NAV": 1543432800.1940222, "Net_Investment_Income": 26145584.573618837, "Contributions": 18700026.848109156, "Distributions": 32563734.59282556, "Category": "Non-Alternatives"}, {"Date": "2024-12-31", "End_NAV": 1550224536.0247815, "Net_Investment_Income": 26677141.40756692, "Contributions": 22485500.79477149, "Distributions": 34176963.64908347, "Category": "Non-Alternatives"}, {"Date": "2025-03-31", "End_NAV": 1558221650.2070918, "Net_Investment_Income": 26116734.45989708, "Contributions": 10715274.057240598, "Distributions": 32223649.66497173, "Category": "Non-Alternatives"}, {"Date": "2025-06-30", "End_NAV": 1569884106.1219923, "Net_Investment_Income": 27009620.05422231, "Contributions": 19201305.183893688, "Distributions": 36107265.130525745, "Category": "Non-Alternatives"}, {"Date": "2025-09-30", "End_NAV": 1634568391.874716, "Net_Investment_Income": 26740929.010335024, "Contributions": 74783819.08865392, "Distributions": 34895988.51364842, "Category": "Non-Alternatives"}], "asset_class_trends": [{"Date": "2019-03-31", "Asset_Class": "Credit Funds", "End_NAV": 30840499.44077739}, {"Date": "2019-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 44070172.80171837}, {"Date": "2019-03-31", "Asset_Class": "Private Equity", "End_NAV": 47393709.40159732}, {"Date": "2019-03-31", "Asset_Class": "Real Assets", "End_NAV": 72129470.52373737}, {"Date": "2019-03-31", "Asset_Class": "Real Estate", "End_NAV": 28814196.9017931}, {"Date": "2019-06-30", "Asset_Class": "Credit Funds", "End_NAV": 93604352.89179596}, {"Date": "2019-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 110627236.78319855}, {"Date": "2019-06-30", "Asset_Class": "Private Equity", "End_NAV": 90997982.29039726}, {"Date": "2019-06-30", "Asset_Class": "Real Assets", "End_NAV": 119051911.99799727}, {"Date": "2019-06-30", "Asset_Class": "Real Estate", "End_NAV": 79664460.86577098}, {"Date": "2019-09-30", "Asset_Class": "Credit Funds", "End_NAV": 125866254.0765884}, {"Date": "2019-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 165647215.19249445}, {"Date": "2019-09-30", "Asset_Class": "Private Equity", "End_NAV": 149078163.35821158}, {"Date": "2019-09-30", "Asset_Class": "Real Assets", "End_NAV": 187649605.07131943}, {"Date": "2019-09-30", "Asset_Class": "Real Estate", "End_NAV": 137862317.29818723}, {"Date": "2019-12-31", "Asset_Class": "Credit Funds", "End_NAV": 177110784.47754133}, {"Date": "2019-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 214234895.09426644}, {"Date": "2019-12-31", "Asset_Class": "Private Equity", "End_NAV": 204233173.8167692}, {"Date": "2019-12-31", "Asset_Class": "Real Assets", "End_NAV": 235618390.6039719}, {"Date": "2019-12-31", "Asset_Class": "Real Estate", "End_NAV": 179001724.75219855}, {"Date": "2020-03-31", "Asset_Class": "Credit Funds", "End_NAV": 220867879.43718004}, {"Date": "2020-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 292500873.8035187}, {"Date": "2020-03-31", "Asset_Class": "Private Equity", "End_NAV": 265391878.7772101}, {"Date": "2020-03-31", "Asset_Class": "Real Assets", "End_NAV": 300732626.6772672}, {"Date": "2020-03-31", "Asset_Class": "Real Estate", "End_NAV": 249300535.77580616}, {"Date": "2020-06-30", "Asset_Class": "Credit Funds", "End_NAV": 261454323.91297695}, {"Date": "2020-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 382067821.205217}, {"Date": "2020-06-30", "Asset_Class": "Private Equity", "End_NAV": 390297870.2727345}, {"Date": "2020-06-30", "Asset_Class": "Real Assets", "End_NAV": 360622330.8227914}, {"Date": "2020-06-30", "Asset_Class": "Real Estate", "End_NAV": 297695938.54366684}, {"Date": "2020-09-30", "Asset_Class": "Credit Funds", "End_NAV": 354332245.4708222}, {"Date": "2020-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 437189863.83542675}, {"Date": "2020-09-30", "Asset_Class": "Private Equity", "End_NAV": 433003494.14020365}, {"Date": "2020-09-30", "Asset_Class": "Real Assets", "End_NAV": 406645211.96814555}, {"Date": "2020-09-30", "Asset_Class": "Real Estate", "End_NAV": 333695274.965345}, {"Date": "2020-12-31", "Asset_Class": "Credit Funds", "End_NAV": 429493650.2316158}, {"Date": "2020-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 489935950.2526903}, {"Date": "2020-12-31", "Asset_Class": "Private Equity", "End_NAV": 498725233.467079}, {"Date": "2020-12-31", "Asset_Class": "Real Assets", "End_NAV": 451160791.47754943}, {"Date": "2020-12-31", "Asset_Class": "Real Estate", "End_NAV": 373462309.0766609}, {"Date": "2021-03-31", "Asset_Class": "Credit Funds", "End_NAV": 438550886.09657305}, {"Date": "2021-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 499463295.0340289}, {"Date": "2021-03-31", "Asset_Class": "Private Equity", "End_NAV": 510578620.8749757}, {"Date": "2021-03-31", "Asset_Class": "Real Assets", "End_NAV": 461533598.8432928}, {"Date": "2021-03-31", "Asset_Class": "Real Estate", "End_NAV": 381221225.3436899}, {"Date": "2021-06-30", "Asset_Class": "Credit Funds", "End_NAV": 447979329.04728514}, {"Date": "2021-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 511940992.5313739}, {"Date": "2021-06-30", "Asset_Class": "Private Equity", "End_NAV": 522870937.26988757}, {"Date": "2021-06-30", "Asset_Class": "Real Assets", "End_NAV": 469058823.3285753}, {"Date": "2021-06-30", "Asset_Class": "Real Estate", "End_NAV": 388798646.03907883}, {"Date": "2021-09-30", "Asset_Class": "Credit Funds", "End_NAV": 458468009.20086086}, {"Date": "2021-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 521426610.95798844}, {"Date": "2021-09-30", "Asset_Class": "Private Equity", "End_NAV": 534112257.85147274}, {"Date": "2021-09-30", "Asset_Class": "Real Assets", "End_NAV": 477907805.51115686}, {"Date": "2021-09-30", "Asset_Class": "Real Estate", "End_NAV": 441697594.8241458}, {"Date": "2021-12-31", "Asset_Class": "Credit Funds", "End_NAV": 465880847.1582614}, {"Date": "2021-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 532507848.4551851}, {"Date": "2021-12-31", "Asset_Class": "Private Equity", "End_NAV": 545222250.9010409}, {"Date": "2021-12-31", "Asset_Class": "Real Assets", "End_NAV": 486043070.0469257}, {"Date": "2021-12-31", "Asset_Class": "Real Estate", "End_NAV": 450832259.07514787}, {"Date": "2022-03-31", "Asset_Class": "Credit Funds", "End_NAV": 475067336.14653677}, {"Date": "2022-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 545228198.8890396}, {"Date": "2022-03-31", "Asset_Class": "Private Equity", "End_NAV": 557672166.604158}, {"Date": "2022-03-31", "Asset_Class": "Real Assets", "End_NAV": 495777997.6946985}, {"Date": "2022-03-31", "Asset_Class": "Real Estate", "End_NAV": 460182966.2738552}, {"Date": "2022-06-30", "Asset_Class": "Credit Funds", "End_NAV": 483633332.89048296}, {"Date": "2022-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 554162936.8502338}, {"Date": "2022-06-30", "Asset_Class": "Private Equity", "End_NAV": 570664900.332958}, {"Date": "2022-06-30", "Asset_Class": "Real Assets", "End_NAV": 506218129.5008427}, {"Date": "2022-06-30", "Asset_Class": "Real Estate", "End_NAV": 469767712.3527332}, {"Date": "2022-09-30", "Asset_Class": "Credit Funds", "End_NAV": 491613559.8052634}, {"Date": "2022-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 565854711.0297782}, {"Date": "2022-09-30", "Asset_Class": "Private Equity", "End_NAV": 582952198.9405434}, {"Date": "2022-09-30", "Asset_Class": "Real Assets", "End_NAV": 516812192.523755}, {"Date": "2022-09-30", "Asset_Class": "Real Estate", "End_NAV": 480281015.0024263}, {"Date": "2022-12-31", "Asset_Class": "Credit Funds", "End_NAV": 503853896.6139913}, {"Date": "2022-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 575503422.1265924}, {"Date": "2022-12-31", "Asset_Class": "Private Equity", "End_NAV": 594956761.1818473}, {"Date": "2022-12-31", "Asset_Class": "Real Assets", "End_NAV": 526617596.2299321}, {"Date": "2022-12-31", "Asset_Class": "Real Estate", "End_NAV": 489272234.8605638}, {"Date": "2023-03-31", "Asset_Class": "Credit Funds", "End_NAV": 509464830.74339134}, {"Date": "2023-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 584181039.5267874}, {"Date": "2023-03-31", "Asset_Class": "Private Equity", "End_NAV": 607862010.2633396}, {"Date": "2023-03-31", "Asset_Class": "Real Assets", "End_NAV": 535686732.34168655}, {"Date": "2023-03-31", "Asset_Class": "Real Estate", "End_NAV": 499764605.51323134}, {"Date": "2023-06-30", "Asset_Class": "Credit Funds", "End_NAV": 520179394.33871406}, {"Date": "2023-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 593820166.0771861}, {"Date": "2023-06-30", "Asset_Class": "Private Equity", "End_NAV": 619741928.9551264}, {"Date": "2023-06-30", "Asset_Class": "Real Assets", "End_NAV": 546390629.6198567}, {"Date": "2023-06-30", "Asset_Class": "Real Estate", "End_NAV": 508901382.14189035}, {"Date": "2023-09-30", "Asset_Class": "Credit Funds", "End_NAV": 529649263.1645964}, {"Date": "2023-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 602260280.927167}, {"Date": "2023-09-30", "Asset_Class": "Private Equity", "End_NAV": 633178273.4851993}, {"Date": "2023-09-30", "Asset_Class": "Real Assets", "End_NAV": 557465287.1138574}, {"Date": "2023-09-30", "Asset_Class": "Real Estate", "End_NAV": 519851468.6618594}, {"Date": "2023-12-31", "Asset_Class": "Credit Funds", "End_NAV": 540846113.3831621}, {"Date": "2023-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 609109159.0418737}, {"Date": "2023-12-31", "Asset_Class": "Private Equity", "End_NAV": 645139144.2073882}, {"Date": "2023-12-31", "Asset_Class": "Real Assets", "End_NAV": 624360108.4911783}, {"Date": "2023-12-31", "Asset_Class": "Real Estate", "End_NAV": 528937130.3126391}, {"Date": "2024-03-31", "Asset_Class": "Credit Funds", "End_NAV": 551432947.1298007}, {"Date": "2024-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 622444989.2089696}, {"Date": "2024-03-31", "Asset_Class": "Private Equity", "End_NAV": 656690258.6703299}, {"Date": "2024-03-31", "Asset_Class": "Real Assets", "End_NAV": 637468132.2411667}, {"Date": "2024-03-31", "Asset_Class": "Real Estate", "End_NAV": 539336764.7656095}, {"Date": "2024-06-30", "Asset_Class": "Credit Funds", "End_NAV": 561640354.0244354}, {"Date": "2024-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 633476724.4021485}, {"Date": "2024-06-30", "Asset_Class": "Private Equity", "End_NAV": 670796190.0099442}, {"Date": "2024-06-30", "Asset_Class": "Real Assets", "End_NAV": 648741220.2370802}, {"Date": "2024-06-30", "Asset_Class": "Real Estate", "End_NAV": 549271448.7923073}, {"Date": "2024-09-30", "Asset_Class": "Credit Funds", "End_NAV": 571678122.9368379}, {"Date": "2024-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 646051385.7352955}, {"Date": "2024-09-30", "Asset_Class": "Private Equity", "End_NAV": 684832773.4396508}, {"Date": "2024-09-30", "Asset_Class": "Real Assets", "End_NAV": 661660442.2908882}, {"Date": "2024-09-30", "Asset_Class": "Real Estate", "End_NAV": 558622254.9692265}, {"Date": "2024-12-31", "Asset_Class": "Credit Funds", "End_NAV": 582422601.3783664}, {"Date": "2024-12-31", "Asset_Class": "Hedge Funds", "End_NAV": 655451709.959233}, {"Date": "2024-12-31", "Asset_Class": "Private Equity", "End_NAV": 700004854.088503}, {"Date": "2024-12-31", "Asset_Class": "Real Assets", "End_NAV": 673256770.6195147}, {"Date": "2024-12-31", "Asset_Class": "Real Estate", "End_NAV": 570815741.8742028}, {"Date": "2025-03-31", "Asset_Class": "Credit Funds", "End_NAV": 594359645.0769684}, {"Date": "2025-03-31", "Asset_Class": "Hedge Funds", "End_NAV": 667593078.415132}, {"Date": "2025-03-31", "Asset_Class": "Private Equity", "End_NAV": 714176358.2805288}, {"Date": "2025-03-31", "Asset_Class": "Real Assets", "End_NAV": 684522787.7778531}, {"Date": "2025-03-31", "Asset_Class": "Real Estate", "End_NAV": 582720471.4179826}, {"Date": "2025-06-30", "Asset_Class": "Credit Funds", "End_NAV": 604776768.9990802}, {"Date": "2025-06-30", "Asset_Class": "Hedge Funds", "End_NAV": 678702061.724992}, {"Date": "2025-06-30", "Asset_Class": "Private Equity", "End_NAV": 728592593.6481835}, {"Date": "2025-06-30", "Asset_Class": "Real Assets", "End_NAV": 696493525.3400693}, {"Date": "2025-06-30", "Asset_Class": "Real Estate", "End_NAV": 594395177.5519812}, {"Date": "2025-09-30", "Asset_Class": "Credit Funds", "End_NAV": 613894090.6787977}, {"Date": "2025-09-30", "Asset_Class": "Hedge Funds", "End_NAV": 692348473.8348976}, {"Date": "2025-09-30", "Asset_Class": "Private Equity", "End_NAV": 743785677.1627964}, {"Date": "2025-09-30", "Asset_Class": "Real Assets", "End_NAV": 709762226.6641409}, {"Date": "2025-09-30", "Asset_Class": "Real Estate", "End_NAV": 605641139.7846515}], "performance_by_asset_class": [{"Asset_Class": "Private Equity", "End_NAV": 743785677.1627964, "Net_Investment_Income": 10472023.068075124, "Total_Return": 11188876.756641522, "Beg_NAV": 728531881.2366399, "Contributions": 19737713.671800047, "Distributions": 15672794.50228503, "Return_Pct": 1.5358115471417755}, {"Asset_Class": "Hedge Funds", "End_NAV": 692348473.8348976, "Net_Investment_Income": 9323508.10020721, "Total_Return": 9546826.079539794, "Beg_NAV": 678740279.2503664, "Contributions": 19617948.968353752, "Distributions": 15556580.463362405, "Return_Pct": 1.4065506897695492}, {"Asset_Class": "Credit Funds", "End_NAV": 613894090.6787977, "Net_Investment_Income": 7765089.44518612, "Total_Return": 8282407.199067064, "Beg_NAV": 604845451.5661141, "Contributions": 15387381.115325939, "Distributions": 14621149.201709373, "Return_Pct": 1.3693427267447569}, {"Asset_Class": "Real Estate", "End_NAV": 605641139.7846515, "Net_Investment_Income": 7786908.4399940055, "Total_Return": 7805272.131133325, "Beg_NAV": 594317276.1080765, "Contributions": 17278488.209509265, "Distributions": 13759896.66406761, "Return_Pct": 1.3133173886928937}, {"Asset_Class": "Real Assets", "End_NAV": 709762226.6641409, "Net_Investment_Income": 8731085.784211688, "Total_Return": 8732237.199528424, "Beg_NAV": 696620287.7025908, "Contributions": 20961079.86627916, "Distributions": 16551378.104257517, "Return_Pct": 1.2535146267885455}], "quarterly_performance": [{"Date": "2019-03-31", "End_NAV": 223248049.06962356, "Beg_NAV": 217712270.00472006, "Total_Return": 2652999.0350999446, "Net_Investment_Income": 2641020.6065870672, "Contributions": 11052075.397299694, "Distributions": 8169295.367496134, "Return_Pct": 1.2185803928471401, "Income_Yield": 1.2130784390470086}, {"Date": "2019-06-30", "End_NAV": 493945944.82916003, "Beg_NAV": 457813353.0712516, "Total_Return": 5405632.909975733, "Net_Investment_Income": 5430963.797846383, "Contributions": 48430332.61053134, "Distributions": 17703373.76259865, "Return_Pct": 1.180750380851043, "Income_Yield": 1.186283397243142}, {"Date": "2019-09-30", "End_NAV": 766103554.9968011, "Beg_NAV": 747730291.9966444, "Total_Return": 8922360.4783727, "Net_Investment_Income": 9441146.619407212, "Contributions": 36434209.12049591, "Distributions": 26983306.598711833, "Return_Pct": 1.193259197049187, "Income_Yield": 1.2626406500393035}, {"Date": "2019-12-31", "End_NAV": 1010198968.7447474, "Beg_NAV": 983683187.6946373, "Total_Return": 12534787.97432328, "Net_Investment_Income": 12483162.537365165, "Contributions": 49814525.07542617, "Distributions": 35833531.99963932, "Return_Pct": 1.2742708354810703, "Income_Yield": 1.2690226582626405}, {"Date": "2020-03-31", "End_NAV": 1328793794.4709823, "Beg_NAV": 1264893792.571128, "Total_Return": 16229679.974373076, "Net_Investment_Income": 16082672.321950024, "Contributions": 95136459.25070132, "Distributions": 47466137.325220205, "Return_Pct": 1.283086380033796, "Income_Yield": 1.2714642459632166}, {"Date": "2020-06-30", "End_NAV": 1692138284.7573867, "Beg_NAV": 1565236804.4014266, "Total_Return": 19427090.76348393, "Net_Investment_Income": 19338672.780923072, "Contributions": 163355033.2021632, "Distributions": 55880643.60968705, "Return_Pct": 1.241159849350283, "Income_Yield": 1.2355109927483792}, {"Date": "2020-09-30", "End_NAV": 1964866090.3799431, "Beg_NAV": 1884078615.8901696, "Total_Return": 25162473.969314452, "Net_Investment_Income": 25212262.404111642, "Contributions": 118381580.89252941, "Distributions": 62756580.37207028, "Return_Pct": 1.3355320609817523, "Income_Yield": 1.3381746489490098}, {"Date": "2020-12-31", "End_NAV": 2242777934.505595, "Beg_NAV": 2195362524.8277636, "Total_Return": 29485045.740786627, "Net_Investment_Income": 28709296.134466343, "Contributions": 93565041.59383844, "Distributions": 75634677.65679324, "Return_Pct": 1.3430604470712584, "Income_Yield": 1.307724615401218}, {"Date": "2021-03-31", "End_NAV": 2291347626.19256, "Beg_NAV": 2242898152.656585, "Total_Return": 29509190.33167635, "Net_Investment_Income": 29672247.29646776, "Contributions": 94000661.11238642, "Distributions": 75060377.90808785, "Return_Pct": 1.31567232764111, "Income_Yield": 1.322942250468336}, {"Date": "2021-06-30", "End_NAV": 2340648728.216201, "Beg_NAV": 2291398517.3043127, "Total_Return": 31092815.27144686, "Net_Investment_Income": 30570210.483671155, "Contributions": 91138676.15368384, "Distributions": 72981280.51324265, "Return_Pct": 1.35693616962036, "Income_Yield": 1.3341289283731885}, {"Date": "2021-09-30", "End_NAV": 2433612278.345625, "Beg_NAV": 2340541774.476367, "Total_Return": 30360056.471598055, "Net_Investment_Income": 30773992.204426296, "Contributions": 139384351.190884, "Distributions": 76673903.7932243, "Return_Pct": 1.297137987566588, "Income_Yield": 1.3148234541257502}, {"Date": "2021-12-31", "End_NAV": 2480486275.636561, "Beg_NAV": 2433625726.360501, "Total_Return": 32960051.543946534, "Net_Investment_Income": 32294185.782664884, "Contributions": 90070360.63990307, "Distributions": 76169862.90778938, "Return_Pct": 1.354359924245149, "Income_Yield": 1.3269988656374454}, {"Date": "2022-03-31", "End_NAV": 2533928665.6082883, "Beg_NAV": 2480588719.1972017, "Total_Return": 31963817.165144034, "Net_Investment_Income": 32681715.77860648, "Contributions": 93649877.12185428, "Distributions": 72273747.87591195, "Return_Pct": 1.2885577088123077, "Income_Yield": 1.3174983634200892}, {"Date": "2022-06-30", "End_NAV": 2584447011.9272504, "Beg_NAV": 2534123325.8817625, "Total_Return": 32975021.108430278, "Net_Investment_Income": 33802132.338740356, "Contributions": 90615823.9665096, "Distributions": 73267159.02945197, "Return_Pct": 1.3012397925407373, "Income_Yield": 1.3338787419502844}, {"Date": "2022-09-30", "End_NAV": 2637513677.3017664, "Beg_NAV": 2584757670.5909276, "Total_Return": 33984884.24967046, "Net_Investment_Income": 33683236.431468695, "Contributions": 94403425.77331996, "Distributions": 75632303.31215158, "Return_Pct": 1.3148189726389643, "Income_Yield": 1.3031487173715604}, {"Date": "2022-12-31", "End_NAV": 2690203911.012927, "Beg_NAV": 2637620281.1110134, "Total_Return": 35776707.989835136, "Net_Investment_Income": 35595401.04916438, "Contributions": 89448905.28854801, "Distributions": 72641983.37646972, "Return_Pct": 1.356401004573916, "Income_Yield": 1.3495271212492705}, {"Date": "2023-03-31", "End_NAV": 2736959218.3884363, "Beg_NAV": 2690346667.8818054, "Total_Return": 33592196.069495946, "Net_Investment_Income": 35602417.987329684, "Contributions": 90878361.42991215, "Distributions": 77858006.99277708, "Return_Pct": 1.248619609901208, "Income_Yield": 1.3233394198733723}, {"Date": "2023-06-30", "End_NAV": 2789033501.1327734, "Beg_NAV": 2738489387.5657544, "Total_Return": 35767108.38744259, "Net_Investment_Income": 36542569.056148656, "Contributions": 91105581.72242294, "Distributions": 76328576.54284653, "Return_Pct": 1.3060889901507342, "Income_Yield": 1.3344060861463252}, {"Date": "2023-09-30", "End_NAV": 2842404573.3526797, "Beg_NAV": 2789088478.7020526, "Total_Return": 37689093.97999724, "Net_Investment_Income": 37107803.736861534, "Contributions": 91896303.74293582, "Distributions": 76269303.07230613, "Return_Pct": 1.3513050685841443, "Income_Yield": 1.330463483687339}, {"Date": "2023-12-31", "End_NAV": 2948391655.4362416, "Beg_NAV": 2842504579.278785, "Total_Return": 34646033.48988765, "Net_Investment_Income": 37064333.91920536, "Contributions": 149744796.6372461, "Distributions": 78503753.96967736, "Return_Pct": 1.218855854884083, "Income_Yield": 1.303932250079594}, {"Date": "2024-03-31", "End_NAV": 3007373092.0158763, "Beg_NAV": 2949665441.9431133, "Total_Return": 39521967.590879574, "Net_Investment_Income": 39704619.28353132, "Contributions": 92395728.92433098, "Distributions": 74210046.44244726, "Return_Pct": 1.339879670042993, "Income_Yield": 1.3460719551087672}, {"Date": "2024-06-30", "End_NAV": 3063925937.4659157, "Beg_NAV": 3007180567.4722385, "Total_Return": 39921487.003305465, "Net_Investment_Income": 40198898.48208705, "Contributions": 94477560.69358799, "Distributions": 77653677.7032163, "Return_Pct": 1.3275387396129152, "Income_Yield": 1.3367637087345656}, {"Date": "2024-09-30", "End_NAV": 3122844979.3718987, "Beg_NAV": 3064192801.7611957, "Total_Return": 42850037.90098726, "Net_Investment_Income": 41837615.67458687, "Contributions": 89122273.08461447, "Distributions": 73320133.3748985, "Return_Pct": 1.3984119366235208, "Income_Yield": 1.3653715148256993}, {"Date": "2024-12-31", "End_NAV": 3181951677.91982, "Beg_NAV": 3122779856.0556774, "Total_Return": 43478155.31469058, "Net_Investment_Income": 42859328.453135185, "Contributions": 90667812.7607681, "Distributions": 74974146.21131599, "Return_Pct": 1.3922901171012099, "Income_Yield": 1.3724735789499414}, {"Date": "2025-03-31", "End_NAV": 3243372340.968465, "Beg_NAV": 3181980384.1395416, "Total_Return": 42300684.64681652, "Net_Investment_Income": 42449507.95619224, "Contributions": 94717388.45044003, "Distributions": 75626116.26833351, "Return_Pct": 1.3293823198176409, "Income_Yield": 1.3340593853997396}, {"Date": "2025-06-30", "End_NAV": 3302960127.264306, "Beg_NAV": 3243580067.7699695, "Total_Return": 44367331.60349305, "Net_Investment_Income": 44538386.66552932, "Contributions": 89987594.16408014, "Distributions": 74974866.27323665, "Return_Pct": 1.3678506673644883, "Income_Yield": 1.3731243174197458}, {"Date": "2025-09-30", "End_NAV": 3365431608.125284, "Beg_NAV": 3303055175.8637877, "Total_Return": 45555619.36591013, "Net_Investment_Income": 44078614.83767415, "Contributions": 92982611.83126816, "Distributions": 76161798.93568194, "Return_Pct": 1.3791964390663503, "Income_Yield": 1.3344801249390899}]};
+        
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Format currency
+        function formatCurrency(value) {
+            if (value >= 1e9) return '$' + (value/1e9).toFixed(2) + 'B';
+            if (value >= 1e6) return '$' + (value/1e6).toFixed(1) + 'M';
+            if (value >= 1e3) return '$' + (value/1e3).toFixed(1) + 'K';
+            return '$' + value.toFixed(0);
+        }
+        
+        // Format percentage
+        function formatPercent(value) {
+            return value.toFixed(2) + '%';
+        }
+        
+        // Chart.js default configuration
+        Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif";
+        Chart.defaults.font.size = 12;
+        Chart.defaults.color = '#495057';
+        
+        // Color palette
+        const colors = {
+            primary: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#43e97b'],
+            gradient: [
+                'rgba(102, 126, 234, 0.8)',
+                'rgba(118, 75, 162, 0.8)',
+                'rgba(240, 147, 251, 0.8)',
+                'rgba(79, 172, 254, 0.8)',
+                'rgba(67, 233, 123, 0.8)'
+            ]
+        };
+        
+        // Initialize all charts
+        function initializeCharts() {
+            createNAVComparisonChart();
+            createQuarterlyReturnChart();
+            createCompositionPieChart();
+            createCompositionBarChart();
+            createPerformanceChart();
+            createIncomeYieldChart();
+            createTrendsLineChart();
+            createCashFlowChart();
+            createIncomeChart();
+        }
+        
+        // NAV Comparison Chart
+        function createNAVComparisonChart() {
+            const altsData = dashboardData.alternatives_timeseries;
+            const nonAltsData = dashboardData.non_alternatives_timeseries;
+            
+            new Chart(document.getElementById('navComparisonChart'), {
+                type: 'line',
+                data: {
+                    labels: altsData.map(d => d.Date),
+                    datasets: [
+                        {
+                            label: 'Alternatives',
+                            data: altsData.map(d => d.End_NAV),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Non-Alternatives',
+                            data: nonAltsData.map(d => d.End_NAV),
+                            borderColor: '#764ba2',
+                            backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: { size: 14, weight: 'bold' },
+                                padding: 15
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Quarterly Return Chart
+        function createQuarterlyReturnChart() {
+            const data = dashboardData.quarterly_performance;
+            
+            new Chart(document.getElementById('quarterlyReturnChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.Date),
+                    datasets: [{
+                        label: 'Quarterly Return %',
+                        data: data.map(d => d.Return_Pct),
+                        backgroundColor: data.map(d => d.Return_Pct >= 0 ? 'rgba(67, 233, 123, 0.8)' : 'rgba(255, 99, 132, 0.8)'),
+                        borderColor: data.map(d => d.Return_Pct >= 0 ? '#43e97b' : '#ff6384'),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Return: ' + formatPercent(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Composition Pie Chart
+        function createCompositionPieChart() {
+            const data = dashboardData.composition;
+            
+            new Chart(document.getElementById('compositionPieChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(d => d.Asset_Class),
+                    datasets: [{
+                        data: data.map(d => d.Total_NAV),
+                        backgroundColor: colors.gradient,
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 15,
+                                font: { size: 12 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label;
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return label + ': ' + formatCurrency(value) + ' (' + percentage + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Composition Bar Chart
+        function createCompositionBarChart() {
+            const data = dashboardData.composition;
+            
+            new Chart(document.getElementById('compositionBarChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.Asset_Class),
+                    datasets: [{
+                        label: 'Total NAV',
+                        data: data.map(d => d.Total_NAV),
+                        backgroundColor: colors.gradient,
+                        borderColor: colors.primary,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'NAV: ' + formatCurrency(context.parsed.x);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Performance Chart
+        function createPerformanceChart() {
+            const data = dashboardData.performance_by_asset_class;
+            
+            new Chart(document.getElementById('performanceChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.Asset_Class),
+                    datasets: [{
+                        label: 'Return %',
+                        data: data.map(d => d.Return_Pct),
+                        backgroundColor: colors.gradient,
+                        borderColor: colors.primary,
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Return: ' + formatPercent(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Income Yield Chart
+        function createIncomeYieldChart() {
+            const data = dashboardData.quarterly_performance;
+            
+            new Chart(document.getElementById('incomeYieldChart'), {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.Date),
+                    datasets: [
+                        {
+                            label: 'Quarterly Return %',
+                            data: data.map(d => d.Return_Pct),
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 3,
+                            yAxisID: 'y',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Income Yield %',
+                            data: data.map(d => d.Income_Yield),
+                            borderColor: '#43e97b',
+                            backgroundColor: 'rgba(67, 233, 123, 0.1)',
+                            borderWidth: 3,
+                            yAxisID: 'y',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatPercent(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) + '%';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Trends Line Chart
+        function createTrendsLineChart() {
+            const data = dashboardData.asset_class_trends;
+            const assetClasses = [...new Set(data.map(d => d.Asset_Class))];
+            
+            const datasets = assetClasses.map((ac, idx) => {
+                const classData = data.filter(d => d.Asset_Class === ac);
+                return {
+                    label: ac,
+                    data: classData.map(d => ({ x: d.Date, y: d.End_NAV })),
+                    borderColor: colors.primary[idx % colors.primary.length],
+                    backgroundColor: colors.gradient[idx % colors.gradient.length],
+                    borderWidth: 3,
+                    tension: 0.4,
+                    fill: false
+                };
+            });
+            
+            new Chart(document.getElementById('trendsLineChart'), {
+                type: 'line',
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 10,
+                                font: { size: 12, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'category',
+                            title: { display: true, text: 'Quarter' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Cash Flow Chart
+        function createCashFlowChart() {
+            const data = dashboardData.quarterly_performance;
+            
+            new Chart(document.getElementById('cashFlowChart'), {
+                type: 'bar',
+                data: {
+                    labels: data.map(d => d.Date),
+                    datasets: [
+                        {
+                            label: 'Contributions',
+                            data: data.map(d => d.Contributions),
+                            backgroundColor: 'rgba(67, 233, 123, 0.8)',
+                            borderColor: '#43e97b',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Distributions',
+                            data: data.map(d => -d.Distributions),
+                            backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                            borderColor: '#ff6384',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + formatCurrency(Math.abs(context.parsed.y));
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(Math.abs(value));
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Income Chart
+        function createIncomeChart() {
+            const data = dashboardData.quarterly_performance;
+            
+            new Chart(document.getElementById('incomeChart'), {
+                type: 'line',
+                data: {
+                    labels: data.map(d => d.Date),
+                    datasets: [{
+                        label: 'Net Investment Income',
+                        data: data.map(d => d.Net_Investment_Income),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                padding: 15,
+                                font: { size: 14, weight: 'bold' }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Income: ' + formatCurrency(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return formatCurrency(value);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize charts when page loads
+        window.addEventListener('load', initializeCharts);
+    </script>
+</body>
+</html>
